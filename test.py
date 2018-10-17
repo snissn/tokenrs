@@ -9,7 +9,6 @@ from web3 import Web3
 from web3 import Web3, HTTPProvider
 import eth_utils
 
-infura_provider = HTTPProvider('https://mainnet.infura.io/2IbUn6pXsKwj7z327A4A ')
 infura_provider = HTTPProvider( "http://10.142.0.2:8545")
 w3 = Web3( infura_provider)
 
