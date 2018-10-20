@@ -8,3 +8,4 @@ sudo /etc/init.d/postgresql start
 
 
 sudo pip3 install psycopg2
+ echo "local   all             $USER                                peer" | sudo tee -a /etc/postgresql/11/main/pg_hba.conf

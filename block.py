@@ -1,4 +1,5 @@
 import web3
+import sys
 import json
 import urllib.request
 from pprint import pprint
@@ -20,8 +21,15 @@ def convert_hex_to_int(hexnum):
   return int(hexnum,16)
 def process_transfer(data,log):
   data['value'] = int(log['data'],16)
-  data['from'] = hex(int(log['topics'][1].hex(),16))
-  data['to'] = hex(int(log['topics'][2].hex(),16))
+  pprint(dict(log))
+  try:
+      data['from'] = hex(int(log['topics'][1].hex(),16))
+  except Exception:
+      pass
+  try:
+      data['to'] = hex(int(log['topics'][2].hex(),16))
+  except Exception:
+      pass
 
 
 def process_log(log):
@@ -40,7 +48,7 @@ def process_log(log):
   else:
     contract = w3.eth.contract( contract_address, abi=abi)
   data['contract_address'] = contract_address
-  data['tx_id'] = log['transactionHash']
+  data['transactionHash'] = log['transactionHash'].hex()
   event_name = contract.events._event_names[log_index]
   data['event_name'] =event_name
 
@@ -50,13 +58,18 @@ def process_log(log):
 
 
 
-block = w3.eth.getBlock(6769259)
-for tx in block['transactions']:
-  tx = dict(w3.eth.getTransactionReceipt(tx))
-  fields = ['blockNumber', 'cumulativeGasUsed','gasUsed','from','to','transactionHash','transactionIndex']
-  tx_data = {field:tx[field] for field in fields}
-  tx_data['transactionHash'] = tx_data['transactionHash'].hex()
-  for log in tx['logs']:
-      log = process_log(log)
-      pprint([tx_data,log])
+for block_no in range(6769259, 6769259+20):
+    block = w3.eth.getBlock(block_no)
+    for tx in block['transactions']:
+      tx2 = dict(w3.eth.getTransaction(tx))
+      pprint(tx2)
+      #we need to include data from tx2 as well - which has nonce and value sent
+      tx = dict(w3.eth.getTransactionReceipt(tx))
+      fields = ['blockNumber', 'cumulativeGasUsed','gasUsed','from','to','transactionHash','transactionIndex']
+      tx_data = {field:tx[field] for field in fields}
+      tx_data['transactionHash'] = tx_data['transactionHash'].hex()
+      sys.exit(0)
+      for log in tx['logs']:
+          log = process_log(log)
+          pprint([tx_data,log])
 
