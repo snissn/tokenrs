@@ -10,9 +10,10 @@ from web3 import Web3
 from web3 import Web3, HTTPProvider
 import eth_utils
 
+import sql
 
 #infura_provider = HTTPProvider( "https://mainnet.infura.io/utWe5Gr6VnHZBD9iN2D4")
-infura_provider = HTTPProvider( "http://127.0.0.1:8545")
+infura_provider = HTTPProvider( "http://10.142.0.6:8545")
 w3 = Web3( infura_provider)
 
 
@@ -22,7 +23,6 @@ def convert_hex_to_int(hexnum):
   return int(hexnum,16)
 def process_transfer(data,log):
   data['value'] = int(log['data'],16)
-  pprint(dict(log))
   try:
       data['from'] = hex(int(log['topics'][1].hex(),16))
   except Exception:
@@ -61,18 +61,17 @@ def process_log(log):
 
        
 
-block = w3.eth.getBlock('latest')
-#block = w3.eth.getBlock(block_no)
-print(block)
+block = w3.eth.getBlock(6779919)
 if block:
     for tx in block['transactions']:
       tx2 = dict(w3.eth.getTransaction(tx))
-      pprint(tx2)
       #we need to include data from tx2 as well - which has nonce and value sent
       tx = dict(w3.eth.getTransactionReceipt(tx))
       fields = ['blockNumber', 'cumulativeGasUsed','gasUsed','from','to','transactionHash','transactionIndex']
       tx_data = {field:tx[field] for field in fields}
       tx_data['transactionHash'] = tx_data['transactionHash'].hex()
+      log = None
       for log in tx['logs']:
           log = process_log(log)
-          pprint([tx_data,log])
+      pprint([tx_data,log,'log'])
+print(len(block['transactions']))
