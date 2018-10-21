@@ -29,9 +29,11 @@ class Log(Base):
     value = Column(Integer)
  
 from sqlalchemy import create_engine
-engine = create_engine('postgresql:///token')
+engine = create_engine('postgresql:///postgres')
  
 from sqlalchemy.orm import sessionmaker
 session = sessionmaker()
 session.configure(bind=engine)
-Base.metadata.create_all(engine)
+
+if __name__ == "__main__":
+    Base.metadata.create_all(engine)

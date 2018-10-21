@@ -7,5 +7,15 @@ sudo apt-get install postgresql-11 python3-postgresql -y
 sudo /etc/init.d/postgresql start
 
 
-sudo pip3 install psycopg2
+sudo pip3 install psycopg2 
+sudo pip3 install sqlalchemy 
+sudo pip3 install web3 
+
+
+
  echo "local   all             $USER                                peer" | sudo tee -a /etc/postgresql/11/main/pg_hba.conf
+sudo apt-get install python3-pip -y
+
+
+
+

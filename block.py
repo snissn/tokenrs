@@ -10,7 +10,8 @@ from web3 import Web3
 from web3 import Web3, HTTPProvider
 import eth_utils
 
-infura_provider = HTTPProvider( "http://192.168.1.9:8545")
+
+#infura_provider = HTTPProvider( "https://mainnet.infura.io/utWe5Gr6VnHZBD9iN2D4")
 infura_provider = HTTPProvider( "http://127.0.0.1:8545")
 w3 = Web3( infura_provider)
 
@@ -58,8 +59,12 @@ def process_log(log):
 
 
 
-for block_no in range(6769259, 6769259+20):
-    block = w3.eth.getBlock(block_no)
+       
+
+block = w3.eth.getBlock('latest')
+#block = w3.eth.getBlock(block_no)
+print(block)
+if block:
     for tx in block['transactions']:
       tx2 = dict(w3.eth.getTransaction(tx))
       pprint(tx2)
@@ -68,8 +73,6 @@ for block_no in range(6769259, 6769259+20):
       fields = ['blockNumber', 'cumulativeGasUsed','gasUsed','from','to','transactionHash','transactionIndex']
       tx_data = {field:tx[field] for field in fields}
       tx_data['transactionHash'] = tx_data['transactionHash'].hex()
-      sys.exit(0)
       for log in tx['logs']:
           log = process_log(log)
           pprint([tx_data,log])
-
