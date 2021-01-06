@@ -10,17 +10,17 @@ from web3 import Web3
 from web3 import Web3, HTTPProvider
 import eth_utils
 
+from web3.middleware import geth_poa_middleware
+
 import sql
 
 #infura_provider = HTTPProvider( "https://mainnet.infura.io/utWe5Gr6VnHZBD9iN2D4")
-infura_provider = HTTPProvider( "http://10.142.0.6:8545")
+infura_provider = HTTPProvider( "https://chain.txt.rs")
 w3 = Web3( infura_provider)
+w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 
-def convert_hex_to_int(hexnum):
-  if hexnum.startswith("0x"):
-    hexnum = hexnum[2:]
-  return int(hexnum,16)
+
 def process_transfer(data,log):
   data['value'] = int(log['data'],16)
   try:
@@ -36,42 +36,52 @@ def process_transfer(data,log):
 def process_log(log):
   data = {}
   contract_address = log['address']
-  log_index = convert_hex_to_int(log['transactionLogIndex'])
+  pprint(log)
+  log_index = log['transactionIndex']
 
-  abi_url = 'https://api.etherscan.io/api?module=contract&action=getabi&address={contract_address}&apikey=nokey'.format(contract_address=contract_address)
+  '''abi_url = 'https://api.etherscan.io/api?module=contract&action=getabi&address={contract_address}&apikey=nokey'.format(contract_address=contract_address)
   fp = urllib.request.urlopen(abi_url)
   mybytes = fp.read()
 
   mystr = mybytes.decode("utf8")
   abi = json.loads(mystr).get('result',{})
   if abi == 'Contract source code not verified':
-    contract = w3.eth.contract( contract_address)
   else:
     contract = w3.eth.contract( contract_address, abi=abi)
+
+  '''
+
+
+  contract = w3.eth.contract( contract_address)
   data['contract_address'] = contract_address
   data['transactionHash'] = log['transactionHash'].hex()
-  event_name = contract.events._event_names[log_index]
-  data['event_name'] =event_name
+  event_name = None
+  try:
+      event_name = contract.events._event_names[log_index]
+      data['event_name'] =event_name
+  except Exception as oops:
+      print(oops)
 
   if event_name == 'Transfer':
     process_transfer(data,log)
   return data
 
 
+latest_block = w3.eth.getBlock('latest')
 
-       
-
-block = w3.eth.getBlock(6779919)
-if block:
-    for tx in block['transactions']:
-      tx2 = dict(w3.eth.getTransaction(tx))
-      #we need to include data from tx2 as well - which has nonce and value sent
-      tx = dict(w3.eth.getTransactionReceipt(tx))
-      fields = ['blockNumber', 'cumulativeGasUsed','gasUsed','from','to','transactionHash','transactionIndex']
-      tx_data = {field:tx[field] for field in fields}
-      tx_data['transactionHash'] = tx_data['transactionHash'].hex()
-      log = None
-      for log in tx['logs']:
-          log = process_log(log)
-      pprint([tx_data,log,'log'])
-print(len(block['transactions']))
+for block_number in range(4):#latest_block.number):
+    block = w3.eth.getBlock(block_number)
+    if block:
+        for tx in block['transactions']:
+          tx2 = dict(w3.eth.getTransaction(tx))
+          #we need to include data from tx2 as well - which has nonce and value sent
+          tx = dict(w3.eth.getTransactionReceipt(tx))
+          tx.update(tx2)
+          fields = ['blockNumber', 'cumulativeGasUsed','gasUsed','from','to','transactionHash','transactionIndex']
+          fields = ['blockHash', 'blockNumber', 'contractAddress', 'cumulativeGasUsed', 'from', 'gasUsed', 'logs', 'logsBloom', 'status', 'to', 'transactionHash', 'transactionIndex', 'gas', 'gasPrice', 'hash', 'input', 'nonce', 'value', 'v', 'r', 's']
+          tx_data = {field:tx[field] for field in fields}
+          tx_data['transactionHash'] = tx_data['transactionHash'].hex()
+          log = None
+          for log in tx['logs']:
+              log = process_log(log)
+          print(['tx',tx])

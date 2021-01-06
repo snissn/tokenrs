@@ -9,7 +9,7 @@ from web3 import Web3
 from web3 import Web3, HTTPProvider
 import eth_utils
 
-infura_provider = HTTPProvider( "http://10.142.0.2:8545")
+infura_provider = HTTPProvider( "https://chain.txt.rs")
 w3 = Web3( infura_provider)
 
 
@@ -61,7 +61,7 @@ def process_log(log):
 
 
 
-for log in w3.eth.getLogs({"fromBlock":6529896,"toBlock":6529896})[1:]:
+for log in w3.eth.getLogs():
   pprint(log)
   data = process_log(log)
   pprint(data)
